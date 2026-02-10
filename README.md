@@ -1,10 +1,23 @@
+<div align="center">
+
 # DocsAI
 
 **Turn any documentation into an AI expert in minutes.**
 
-DocsAI is a local-first RAG engine that crawls, indexes, and searches documentation so you don't have to. Point it at a website, a folder of PDFs, or an OpenAPI spec — it builds a knowledge base, runs hybrid search, and gives you cited answers. No cloud. No API keys for search. Everything on your machine.
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-14B8A6?style=flat-square)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector_Store-FF6F61?style=flat-square)
+![MCP](https://img.shields.io/badge/MCP-Server-8B5CF6?style=flat-square&logo=anthropic&logoColor=white)
 
-It also ships as an **MCP server**, so Claude (or any MCP client) can query your knowledge bases as native tools. Each knowledge base is its own isolated MCP server. Stripe docs, internal wiki, framework reference — each one becomes a tool your AI assistant can call.
+A local-first RAG engine that crawls, indexes, and searches documentation so you don't have to. Point it at a website, a folder of PDFs, or an OpenAPI spec — it builds a knowledge base, runs hybrid search, and gives you cited answers.
+
+No cloud. No API keys for search. Everything on your machine.
+
+[Getting Started](#getting-started) · [Web UI](#web-ui) · [MCP Server](#use-as-an-mcp-server) · [CLI](#cli-reference) · [API](#rest-api) · [Configuration](#configuration-reference)
+
+</div>
 
 ---
 
@@ -36,78 +49,115 @@ DocsAI solves this by building a **persistent, searchable vector store** from yo
 
 This isn't a toy wrapper around an embedding API. It's a full pipeline:
 
-- **Hybrid retrieval** — BM25 keyword matching + dense semantic embeddings, merged and deduplicated. Catches both exact terms and conceptual matches.
-- **Document intelligence** — Automatically categorizes documents (technical, conversation, reference, API spec) and selects chunking strategies per category.
-- **Smart chunking** — Recipes keep ingredients with instructions. API docs keep endpoints with parameters. Conversations keep speaker turns together.
-- **Multi-mode prompting** — Auto-detects question intent and switches persona: comprehensive expert, integration guide, debugger, or educator.
-- **Incremental updates** — Content-hash tracking means re-ingestion only processes what changed.
+- **Hybrid retrieval** — BM25 keyword matching + dense semantic embeddings, merged and deduplicated
+- **Document intelligence** — Auto-categorizes documents and selects chunking strategies per category
+- **Smart chunking** — API docs keep endpoints with parameters, conversations keep speaker turns together
+- **Multi-mode prompting** — Auto-detects question intent: comprehensive, integration, debugging, or learning
+- **Incremental updates** — Content-hash tracking means re-ingestion only processes what changed
 
 ---
 
-## 3 Minutes to an AI Expert
+## Getting Started
 
-### 1. Install
+### Install
 
 ```bash
-git clone https://github.com/yourusername/docsai && cd docsai
+git clone https://github.com/end1989/docsai && cd docsai
 python -m venv .venv && .venv\Scripts\activate  # Windows
-pip install -r requirements.txt
+pip install -e .                                 # Installs docsai CLI
 ```
 
-### 2. Create a Profile
-
-```yaml
-# profiles/stripe/config.yaml
-name: stripe
-description: Stripe API Documentation knowledge base
-source:
-  type: web
-  domain: https://docs.stripe.com
-  allowed_paths: ["/api", "/docs", "/payments"]
-  depth: 2
-model:
-  llm:
-    mode: ollama
-    ollama_model: qwen2.5:14b-instruct
-  embedding:
-    hf_name: BAAI/bge-base-en-v1.5
-```
-
-### 3. Ingest & Ask
+### Create a Profile & Ingest
 
 ```bash
-python -m docsai.main ingest stripe    # Crawls, chunks, embeds, indexes
-python -m docsai.main ask stripe "How do I create a checkout session?"
+docsai init stripe --domain https://docs.stripe.com --depth 2
+docsai ingest stripe       # Crawls, chunks, embeds, indexes
+docsai ask stripe "How do I create a checkout session?"
 ```
 
 That's it. You now have a Stripe API expert.
+
+### Start the Web UI
+
+```bash
+docsai serve stripe        # Backend on :8080
+cd ui && npm install && npm run dev  # Frontend on :5173
+```
+
+---
+
+## Web UI
+
+DocsAI ships with a full **React + TypeScript + Tailwind CSS** dashboard for managing everything through the browser.
+
+```
++===================================================================+
+| [DocsAI]                         [Profile: stripe v]  [+]  [*]   |
++===================================================================+
+| [Chat]  [Dashboard]                                               |
++-------------------------------------------------------------------+
+|                                                                   |
+|  CHAT VIEW:                                                       |
+|  ┌─────────────────────────────────────────────────────────────┐  |
+|  │ Q: How do I verify webhook signatures?                      │  |
+|  │ ─────────────────────────────────────────────────────────── │  |
+|  │ A: To verify webhook signatures...  [formatted markdown]   │  |
+|  │ Sources: [1] docs.stripe.com/webhooks/signatures           │  |
+|  └─────────────────────────────────────────────────────────────┘  |
+|                                                                   |
+|  DASHBOARD VIEW:                                                  |
+|  ┌──────────────────┐  ┌──────────────────────────────────────┐  |
+|  │ PROFILE INFO     │  │ INGESTION                            │  |
+|  │ Stripe API Docs  │  │ [Start Ingestion]                    │  |
+|  │ web · stripe.com │  │ Status: processing  [=====>--] 47%   │  |
+|  └──────────────────┘  │ Files: 234/500 · chunks.html         │  |
+|  ┌──────┐┌──────┐┌──┐ │ [Cancel]                              │  |
+|  │1,933 ││12 MB ││48M│ └──────────────────────────────────────┘  |
+|  │chunks││cache ││vec│                                            |
+|  └──────┘└──────┘└──┘                                             |
++-------------------------------------------------------------------+
+```
+
+**Features:**
+- Chat with your docs — formatted markdown answers with clickable citations
+- Switch between profiles on the fly
+- Create new profiles from the UI
+- Start/cancel ingestion with real-time progress tracking
+- Dashboard with chunk count, cache size, vector store stats
+- Dark theme (because we build at night)
 
 ---
 
 ## Use as an MCP Server
 
-Each profile runs as its own MCP server. No FastAPI backend needed — it searches the vector store directly.
+Each profile runs as its own MCP server. Claude (or any MCP client) can query your knowledge bases as native tools.
 
-Add to your Claude Code config or `claude_desktop_config.json`:
+### Auto-install (recommended)
+
+```bash
+docsai mcp install     # Adds all profiles to Claude Code
+docsai mcp status      # Check what's installed
+docsai mcp uninstall   # Clean removal
+```
+
+This merges into your existing `~/.claude/.mcp.json` without touching other servers.
+
+### Manual config
+
+Add to `claude_desktop_config.json` or `.claude/.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "docsai-stripe": {
-      "command": "/path/to/docsai/.venv/Scripts/python.exe",
-      "args": ["/path/to/docsai/docsai_mcp_server.py", "stripe"]
-    },
-    "docsai-petstore": {
-      "command": "/path/to/docsai/.venv/Scripts/python.exe",
-      "args": ["/path/to/docsai/docsai_mcp_server.py", "petstore"]
+      "command": "/path/to/.venv/Scripts/python.exe",
+      "args": ["/path/to/docsai_mcp_server.py", "stripe"]
     }
   }
 }
 ```
 
-Now Claude has `search_stripe_docs` and `search_petstore_docs` as native tools. Ask it anything about those APIs and it retrieves from your indexed knowledge base — with citations.
-
-Want another expert? Create a profile, ingest, add the MCP entry. Done.
+Now Claude has `search_stripe_docs` as a native tool. Ask it anything about the Stripe API and it retrieves from your indexed knowledge base — with citations.
 
 ---
 
@@ -117,13 +167,13 @@ Every query runs through a two-stage ranking system:
 
 ```
 Question
-  |
+  │
   ├──→ BM25 Sparse Ranking (keyword matching via rank-bm25)
-  |        Top 40 candidates
-  |
+  │        Top 40 candidates
+  │
   ├──→ Dense Embedding Ranking (cosine similarity via BAAI/bge-base-en-v1.5)
-  |        Top 40 candidates
-  |
+  │        Top 40 candidates
+  │
   └──→ Merge + Deduplicate
            Top 10 passages → LLM with citations
 ```
@@ -151,7 +201,7 @@ BM25 catches exact terminology ("PaymentIntent", "webhook_endpoint_secret"). Emb
 
 ## Multi-Mode Expert System
 
-DocsAI doesn't just retrieve — it adapts. Questions are classified by intent and routed to specialized prompt personas:
+Questions are classified by intent and routed to specialized prompt personas:
 
 | Mode | Triggers | Behavior |
 |------|----------|----------|
@@ -161,6 +211,26 @@ DocsAI doesn't just retrieve — it adapts. Questions are classified by intent a
 | **Learning** | "Explain...", "What is...", "Why does..." | Educational, builds understanding from fundamentals |
 
 Override with `?mode=debugging` or let it auto-detect from your question.
+
+---
+
+## CLI Reference
+
+```bash
+docsai init <name>           # Create a new profile
+docsai list                  # List all profiles with stats
+docsai add <profile> <url>   # Add a source to a profile
+docsai status <profile>      # Show profile details
+docsai remove <profile>      # Delete a profile
+
+docsai serve <profile>       # Start the API server
+docsai ingest <profile>      # Run ingestion via CLI
+docsai ask <profile> "..."   # Ask a question via CLI
+
+docsai mcp install           # Install MCP servers into Claude
+docsai mcp status            # Show MCP installation state
+docsai mcp uninstall         # Remove MCP servers from Claude
+```
 
 ---
 
@@ -186,7 +256,7 @@ Profiles don't share state. You can have a Stripe expert, a React expert, and an
 
 ## REST API
 
-Start the server with `python -m docsai.main serve <profile>` for a full REST API:
+Start with `docsai serve <profile>`:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
@@ -198,6 +268,7 @@ Start the server with `python -m docsai.main serve <profile>` for a full REST AP
 | `/profiles/list` | GET | List all profiles |
 | `/profile/switch/{name}` | POST | Switch active profile |
 | `/profile/{name}/stats` | GET | Profile statistics |
+| `/health` | GET | Backend health check |
 
 ---
 
@@ -208,7 +279,7 @@ name: my-docs
 description: What this knowledge base contains
 
 source:
-  type: web                            # web | local | mixed | openapi
+  type: web                            # web | local | mixed
   domain: https://docs.example.com     # For web sources
   allowed_paths: ["/api", "/guides"]   # Restrict crawl scope
   depth: 2                             # Crawl depth limit
@@ -240,21 +311,25 @@ server:
 
 ---
 
-## Utility Scripts
+## Tech Stack
 
-| Script | What it does |
-|--------|-------------|
-| `scripts/diagnose_rag_quality.py` | Runs test questions and evaluates answer quality |
-| `scripts/monitor_ingestion.py` | Real-time ingestion progress watcher |
-| `scripts/clear_chroma.py` | Wipe a profile's vector store for fresh re-indexing |
-| `scripts/ingestion_status.py` | Check current ingestion state |
-| `scripts/schedule_ingestion.py` | Scheduled periodic re-ingestion |
+| Layer | Technology |
+|-------|-----------|
+| **Retrieval** | BM25 (rank-bm25) + dense embeddings (sentence-transformers, BAAI/bge-base-en-v1.5) |
+| **Vector Store** | ChromaDB (persistent, on-disk) |
+| **LLM** | Ollama or llama.cpp (local inference, no API keys) |
+| **Backend** | FastAPI, Python 3.11+ |
+| **Frontend** | React 19, TypeScript, Vite 6, Tailwind CSS 4 |
+| **CLI** | Typer + Rich |
+| **MCP** | FastMCP SDK, stdio transport |
+| **Document Processing** | BeautifulSoup, markdownify, custom parsers for 15+ formats |
 
 ---
 
 ## Requirements
 
 - **Python 3.11+**
+- **Node.js 18+** (for the Web UI)
 - **Ollama** (or llama.cpp) with a chat model
 - ~2GB disk for the embedding model (downloaded once)
 - Vector store grows with your docs (~1MB per 1000 chunks)
