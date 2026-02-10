@@ -213,6 +213,22 @@ async def clear_cache(profile_name: str):
         server_logger.error(f"Failed to clear cache for {profile_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
 
+@app.delete("/profiles/{profile_name}")
+async def delete_profile(profile_name: str):
+    """Delete a profile and all its data."""
+    try:
+        remove_profile_op(profile_name)
+        server_logger.info(f"Deleted profile: {profile_name}")
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Profile '{profile_name}' deleted successfully"
+        })
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Profile '{profile_name}' not found")
+    except Exception as e:
+        server_logger.error(f"Failed to delete profile {profile_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete profile: {str(e)}")
+
 @app.get("/profile/{profile_name}/stats")
 async def get_profile_stats(profile_name: str):
     """Get statistics for a specific profile."""
