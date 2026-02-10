@@ -335,7 +335,10 @@ server:
 - Vector store grows with your docs (~1MB per 1000 chunks)
 
 ---
+<img width="836" height="810" alt="Screenshot 2026-02-10 041038" src="https://github.com/user-attachments/assets/8342d00c-a1a1-4791-831d-630d2f0d278b" />
 
-## License
+<img width="1027" height="1169" alt="Screenshot 2026-02-10 040522" src="https://github.com/user-attachments/assets/38eba43d-6013-492e-a46d-9459cfd7dd73" />
 
-[MIT](LICENSE)
+<img width="1033" height="1283" alt="Screenshot 2026-02-10 040812" src="https://github.com/user-attachments/assets/9d11bd4e-38ea-48ed-834a-d257f89db8eb" />
+
+## License[MIT](LICENSE)
