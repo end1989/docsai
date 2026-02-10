@@ -91,15 +91,16 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
           {/* Web domain */}
           {sourceType !== 'local' && (
             <div>
-              <label className="block text-xs text-slate-400 uppercase tracking-wider mb-1">Domain to crawl</label>
+              <label className="block text-xs text-slate-400 uppercase tracking-wider mb-1">URL to crawl</label>
               <input
                 type="text"
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
-                placeholder="https://docs.example.com"
+                placeholder="https://docs.example.com/guides"
                 required={sourceType !== 'local'}
                 className="w-full bg-base border border-panel-border rounded-md px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-accent"
               />
+              <p className="text-xs text-slate-500 mt-1">Include the path to scope the crawl (e.g. /docs). Root domain crawls everything.</p>
             </div>
           )}
 

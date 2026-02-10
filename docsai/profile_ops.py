@@ -126,9 +126,12 @@ def create_profile_on_disk(
     if source_type == "web":
         if not domain:
             raise ValueError("A domain is required for web source type.")
+        parsed = urlparse(domain.rstrip("/"))
+        base_domain = f"{parsed.scheme}://{parsed.netloc}"
+        default_paths = [parsed.path] if parsed.path and parsed.path != "/" else ["/"]
         config["source"]["type"] = "web"
-        config["source"]["domain"] = domain.rstrip("/")
-        config["source"]["allowed_paths"] = allowed_paths or ["/"]
+        config["source"]["domain"] = base_domain
+        config["source"]["allowed_paths"] = allowed_paths or default_paths
         config["source"]["depth"] = depth
         config["source"]["respect_robots"] = True
 
@@ -142,8 +145,11 @@ def create_profile_on_disk(
     elif source_type == "mixed":
         config["source"]["type"] = "mixed"
         if domain:
-            config["source"]["domain"] = domain.rstrip("/")
-            config["source"]["allowed_paths"] = allowed_paths or ["/"]
+            parsed = urlparse(domain.rstrip("/"))
+            base_domain = f"{parsed.scheme}://{parsed.netloc}"
+            default_paths = [parsed.path] if parsed.path and parsed.path != "/" else ["/"]
+            config["source"]["domain"] = base_domain
+            config["source"]["allowed_paths"] = allowed_paths or default_paths
             config["source"]["depth"] = depth
             config["source"]["respect_robots"] = True
         if local_paths:

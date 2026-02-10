@@ -84,6 +84,12 @@ def _robots_allowed(start_domain: str, url: str, respect: bool) -> bool:
         print(f"[ROBOTS] Blocked by robots.txt: {url}")
     return allowed
 
+def _normalize_url(url: str) -> str:
+    """Strip query params and fragments to avoid crawling duplicates."""
+    parsed = urlparse(url)
+    # Rebuild without query string or fragment
+    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+
 def _is_allowed_path(url: str, start_domain: str, allowed_paths: list[str]) -> bool:
     # Stay on same host + within at least one allowed prefix
     u = urlparse(url)
@@ -137,7 +143,8 @@ def crawl_website(start_url: str, allowed_paths: list[str], max_depth: int, cach
     frontier: list[tuple[str, int]] = [(start_url, 0)]
 
     while frontier:
-        url, depth = frontier.pop(0)
+        raw_url, depth = frontier.pop(0)
+        url = _normalize_url(raw_url)
         if url in seen:
             continue
         seen.add(url)
