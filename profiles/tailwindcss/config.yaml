@@ -1,0 +1,17 @@
+name: tailwindcss
+description: tailwindcss knowledge base
+source:
+  type: web
+  domain: https://tailwindcss.com/docs
+  allowed_paths:
+  - /
+  depth: 4
+  respect_robots: true
+model:
+  llm:
+    mode: ollama
+    ollama_model: qwen2.5:14b-instruct
+    n_ctx: 256000
+    temperature: 0.2
+  embedding:
+    hf_name: BAAI/bge-base-en-v1.5

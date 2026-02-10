@@ -1,0 +1,19 @@
+fastapi
+uvicorn
+chromadb
+beautifulsoup4
+lxml
+markdownify
+rank-bm25
+typer
+pyyaml
+orjson
+requests
+sentence-transformers
+
+# Optional: For enhanced file parsing capabilities
+# Uncomment the ones you need based on your document types:
+# PyPDF2  # For PDF parsing
+# python-docx  # For Word documents
+# ebooklib  # For EPUB eBooks
+# python-magic  # For better file type detection

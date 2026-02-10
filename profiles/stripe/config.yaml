@@ -1,0 +1,28 @@
+name: stripe
+description: Stripe API Documentation knowledge base
+source:
+  type: web
+  domain: https://docs.stripe.com
+  allowed_paths: ["/api", "/docs", "/checkout", "/payments"]
+  depth: 2
+  respect_robots: true
+ingest:
+  chunk_tokens: 800
+  chunk_overlap: 120
+  min_text_len: 180
+retrieval:
+  k_bm25: 40
+  k_embed: 40
+  combine_top_k: 10
+model:
+  llm:
+    mode: ollama
+    ollama_model: qwen2.5:14b-instruct
+    n_ctx: 256000
+    temperature: 0.2
+    top_p: 0.9
+  embedding:
+    hf_name: BAAI/bge-base-en-v1.5
+server:
+  port: 8080
+  cors_origins: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"]

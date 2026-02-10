@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data & Models
+*.sqlite3
+*.db
+*.bin
+*.pt
+*.pth
+*.pkl
+*.npy
+*.npz
+chroma_data/
+profiles/*/data/
+profiles/*/cache/
+models/
+embeddings/
+logs/
+
+# Runtime
+runs/
+test_diagnostics/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Claude/MCP
+.claude/
+.mcp.json
+mcp_config.json
+
+# Node / Frontend
+node_modules/
+ui/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Misc
+.output.txt
+*.bak
