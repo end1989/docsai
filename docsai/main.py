@@ -276,7 +276,7 @@ async def get_profile_stats(profile_name: str):
                 )
 
                 try:
-                    collection = client.get_collection(name=f"{profile_name}_docs")
+                    collection = client.get_collection(name="docs")
                     count = collection.count()
                     stats["totalChunks"] = count
 
